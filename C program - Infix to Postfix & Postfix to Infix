@@ -1,0 +1,179 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
+#define MAX 20
+char stack[MAX];
+char newstack[MAX][MAX];
+int newtop = -1;
+int top = -1;
+char item;
+char newitem;
+bool isfull()
+{
+    if (top == MAX - 1) {
+        return true;
+    }
+    return false;
+}
+bool newisfull()
+{
+    if (newtop == MAX - 1) {
+        return true;
+    }
+    return false;
+}
+bool isempty()
+{
+    if (top == -1) {
+        return true;
+    }
+    return false;
+}
+bool newisempty()
+{
+    if (newtop == -1) {
+        return true;
+    }
+    return false;
+}
+void push(char item)
+{
+    if (!isfull()) {
+        top = top + 1;
+        stack[top] = item;
+    } else
+        printf("Stack is full\n");
+}
+void newpush(char *newitem)
+{
+    if (!newisfull()) {
+        newtop++;
+        strcpy(newstack[newtop], newitem);
+    } else printf("Stack is full\n");
+}
+char pop()
+{
+    if (!isempty()) {
+        item = stack[top];
+        top = top - 1;
+        return item;
+    } else
+        printf("Stack is empty\n");
+
+    return '\0';
+}
+void newpop(char item[20])
+{
+    if (!newisempty()) {
+
+        strcpy(item, newstack[newtop]);
+        newtop--;
+
+    } else {
+        printf("Stack is empty\n");
+    }
+}
+int icp(char ch)
+{
+    if (ch == '+' || ch == '-') return 1;
+    if (ch == '*' || ch == '/') return 2;
+    if (ch == '^') return 4;
+    if (ch == '(') return 5;
+    return 0;
+}
+int isp(char ch)
+{
+    if (ch == '+' || ch == '-') return 1;
+    if (ch == '*' || ch == '/') return 2;
+    if (ch == '^') return 3;
+    return 0;
+}
+void in_post(char in_exp[100])
+{
+    int k = 0, i = 0;
+    char post_exp[20];
+    char tkn = in_exp[i];
+    while (tkn != '\0') {
+        if (isalpha(tkn) != 0) {
+            post_exp[k] = in_exp[i];
+            k++;
+        } else {
+            if (tkn == '(') push(tkn);
+            else {
+                if (tkn == ')') {
+                    while ((tkn = pop()) != '(') {
+                        post_exp[k] = tkn;
+                        k++;
+                    }
+                } else {
+                    while (!isempty() && isp(stack[top]) >= icp(tkn)) {
+                        post_exp[k] = pop();
+                        k++;
+                    }
+                    push(tkn);
+                }
+            }
+        }
+        i++;
+        tkn = in_exp[i];
+    }
+    while (!isempty()) {
+        post_exp[k] = pop();
+        k++;
+    }
+    for (int j = 0; j < k + 1; j++) {
+        printf("%c", post_exp[j]);
+    }
+}
+void post_infix(char post_exp[20])
+{
+    int l = strlen(post_exp);
+    char x[20], op2[20], op1[20], e1[20];
+    for (int i = 0; i < l; i++) {
+        x[0] = post_exp[i];
+        x[1] = '\0';
+
+        if (isalpha(x[0]) != 0) {
+            newpush(x);
+        } else {
+            newpop(op2);
+            newpop(op1);
+
+            strcpy(e1, "(");
+            strcat(e1, op1);
+            strcat(e1, x);
+            strcat(e1, op2);
+            strcat(e1, ")");
+            newpush(e1);
+        }
+    }
+    char infix[20];
+    newpop(infix);
+    printf("%s", infix);
+}
+int main()
+{
+    char in_exp[100];
+    int n;
+    printf("\nChoose the choice of conversion:");
+    printf("\n1 - Infix to Postfix");
+    printf("\n2 - Postfix to Infix");
+    printf("\nEnter choice: ");
+    scanf("%d", &n);
+    switch (n) {
+    case 1:
+        printf("\nEnter expression: ");
+        scanf("%s", &in_exp);
+        in_post(in_exp);
+        break;
+    case 2:
+        printf("\nEnter expression: ");
+        scanf("%s", &in_exp);
+        post_infix(in_exp);
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
